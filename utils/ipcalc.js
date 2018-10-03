@@ -1,6 +1,6 @@
 
 var ipcalc = function (ip, mask) {
-  newmask = convertMask(masl);
+  newmask = convertMask(mask);
   newip = converIpBinary(ip);
   result = converIp(newip, newmask);
   return result;

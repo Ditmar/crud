@@ -3,6 +3,7 @@ var router = express.Router();
 var sha1 = require('sha1');
 var USER = require("../../database/usersModel");
 var ipcalc = require("../../utils/ipcalc");
+var calcsubnet = require("../../utils/calsubnet");
 
 router.post("/subnet", (req, res) => {
   var data = req.body;
@@ -65,25 +66,59 @@ router.post("/subnet", (req, res) => {
   // 2 ^ 3 = 8
   //2 ^ 3 -1 = 7
   //bvhost = bits variables de host""
+  var octeto = null;
   var bvhost = null;
   if (host < 8 ) {
     bvhost = host - 0 * 8;
+    octeto = 3;
   }
   if (host > 8 && host < 2 * 8) {
     bvhost = host - 1 * 8;
+    octeto = 2;
   }
   if (host > 16 && host < 3 * 8) {
     bvhost = host - 2 * 8;
+    octeto = 1;
   }
   if (host > 24 && host < 3*8) {
     bvhost = host - 2 * 8;
+    octeto = 0;
   }
   var redsalto = Math.pow(2, bvhost);
   var redanterior = redsalto - 1;
   var result = new ipcalc(data.ip, mask);
-  /*for (var i = 0; i < 10 ; i ++) {
+  console.log(redsalto);
+  console.log(red);
+  var networdlong = Math.pow(2, red);
+  var hostlong    = Math.pow(2, host) - 2;
+  result["networklong"] = networdlong;
+  result["hostlong"]    = hostlong;
+  var ipgenerator = result["ipdec"].split(".");
+  //var rango_host = [];
+  //var broad_cast = [];
+  var network = [];
+  var current_octeto = parseInt(ipgenerator[octeto],10) ;
+  for (var i = 0; i < networdlong - 1 ; i ++) {
+    console.log();
+    current_octeto += redsalto;
+    var primerautilizable = null;
+    primerautilizable = parseInt(ipgenerator[3], 10) + 1;
+    var networkdip = ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + ipgenerator[3];
+    ipgenerator =  calcsubnet(current_octeto, ipgenerator, octeto);
+    current_octeto = parseInt(ipgenerator[octeto], 10);
+    var broadcast = null;
+    broadcast = parseInt(ipgenerator[3], 10) - 1;
+    var ultimaiputilizable = broadcast - 1;
+    var cad = ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + primerautilizable +"--"+ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + ultimaiputilizable
+    //rango_host.push(cad);
+    //broad_cast.push(ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast);
+    network.push([networkdip, cad, ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast]);
 
-  }*/
+  }
+  //result["rango_host"] = rango_host;
+  //result["broad_cast"] = broad_cast;
+  result["network"] = network;
+
   res.status(300).json(result);
 });
 
