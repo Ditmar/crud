@@ -2,6 +2,92 @@ var express = require('express');
 var router = express.Router();
 var sha1 = require('sha1');
 var USER = require("../../database/usersModel");
+var ipcalc = require("../../utils/ipcalc");
+
+router.post("/subnet", (req, res) => {
+  var data = req.body;
+  if (data.ip == null) {
+    res.status(300).json({
+        msn: "Error en el formato de datos"
+    });
+    return;
+  }
+  if (data.mask == null) {
+    res.status(300).json({
+        msn: "Error en el formato de datos"
+    });
+    return;
+  }
+  if (data.host == null) {
+    res.status(300).json({
+        msn: "Error en el formato de datos"
+    });
+    return;
+  }
+  var rex_ip = /\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}/g
+  if (data.ip.match(rex_ip) == undefined) {
+    res.status(300).json({
+        msn: "ip mal escrita"
+    });
+    return;
+  }
+  var rex_mask = /\d{1,31}/g
+  if (data.mask.match(rex_mask) == undefined) {
+    res.status(300).json({
+        msn: "La mascara debe estar entre 1 y 31"
+    });
+    return;
+  }
+  var rex_host = /\d{1,31}/g
+  if (data.host.match(rex_host) == undefined) {
+    res.status(300).json({
+        msn: "Error en el host formato invalido"
+    });
+    return;
+  }
+  var mask = parseInt(data.mask, 10);
+  var host = parseInt(data.host, 10);
+  var hostrestantes = 32 - mask;
+  if (host > hostrestantes) {
+    res.status(300).json({
+        msn: "Los bits host no pueden ser mayores a 32 - " + mask
+    });
+    return;
+  }
+  //LO serio
+  var red = hostrestantes - host;
+  //si tengo una ip
+  //192.168.1.5/8
+  //ip host = 11
+  //ip > 8 ip < 16
+  // hostvaraibles =  11 - 8 = 3
+  // 3 bits
+  // 2 ^ 3 = 8
+  //2 ^ 3 -1 = 7
+  //bvhost = bits variables de host""
+  var bvhost = null;
+  if (host < 8 ) {
+    bvhost = host - 0 * 8;
+  }
+  if (host > 8 && host < 2 * 8) {
+    bvhost = host - 1 * 8;
+  }
+  if (host > 16 && host < 3 * 8) {
+    bvhost = host - 2 * 8;
+  }
+  if (host > 24 && host < 3*8) {
+    bvhost = host - 2 * 8;
+  }
+  var redsalto = Math.pow(2, bvhost);
+  var redanterior = redsalto - 1;
+  var result = new ipcalc(data.ip, mask);
+  /*for (var i = 0; i < 10 ; i ++) {
+
+  }*/
+  res.status(300).json(result);
+});
+
+
 /* GET home page. */
 router.delete(/\/user\/\w{1,}/g, (req, res) => {
   url = req.url;
