@@ -56,6 +56,7 @@ router.post("/subnet", (req, res) => {
   }
   //LO serio
   var red = hostrestantes - host;
+
   //si tengo una ip
   //192.168.1.5/8
   //ip host = 11
@@ -65,25 +66,53 @@ router.post("/subnet", (req, res) => {
   // 2 ^ 3 = 8
   //2 ^ 3 -1 = 7
   //bvhost = bits variables de host""
+  var octeto = null;
   var bvhost = null;
   if (host < 8 ) {
     bvhost = host - 0 * 8;
+    octeto = 3;
   }
   if (host > 8 && host < 2 * 8) {
     bvhost = host - 1 * 8;
+    octeto = 2;
   }
   if (host > 16 && host < 3 * 8) {
     bvhost = host - 2 * 8;
+    octeto = 1;
   }
   if (host > 24 && host < 3*8) {
     bvhost = host - 2 * 8;
+    octeto = 1;
   }
   var redsalto = Math.pow(2, bvhost);
   var redanterior = redsalto - 1;
   var result = new ipcalc(data.ip, mask);
-  /*for (var i = 0; i < 10 ; i ++) {
+  console.log(redsalto);
+  console.log(bvhost);
+  var networklong = Math.pow(2, red);
+  var hostlong = Math.pow(2, host) - 2;
 
-  }*/
+  result["hosturilizables"] = hostlong;
+  result["networkutilizables"] = networklong;
+  var firstnetwork = result["ipdec"];
+  var ipsarray = firstnetwork.split(".");
+  var ipdec = parseInt(ipsarray[octeto], 10);
+  var octetovariable = octeto;
+  for (var i = 0; i < networklong; i++) {
+    console.log(ipsarray[0] + "." + ipsarray[1] + "." + ipsarray[2] + "." + ipsarray[3]);
+    ipdec += redsalto;
+    if (ipdec % 256 == 0) {
+      ipdec = 0;
+      var variable = parseInt(ipsarray[octeto - 1], 10);
+      variable++;
+      ipsarray[octeto - 1] = variable;
+      if (variable % 256 == 0) {
+
+      }
+    }
+    ipsarray[octeto] = ipdec;
+
+  }
   res.status(300).json(result);
 });
 

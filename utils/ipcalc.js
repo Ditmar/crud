@@ -1,6 +1,6 @@
 
 var ipcalc = function (ip, mask) {
-  newmask = convertMask(masl);
+  newmask = convertMask(mask);
   newip = converIpBinary(ip);
   result = converIp(newip, newmask);
   return result;
@@ -55,6 +55,6 @@ function converIp (ip, mask) {
   var hack = result.split(".");
   var decimalip = parseInt(hack[0],2) + "." + parseInt(hack[1],2) + "." + parseInt(hack[2],2) + "." + parseInt(hack[3],2);
 
-  return {ipdec: decimalip, ipbin: result,ipmask: mask}
+  return {ipdec: decimalip, ipbin_: result,ipmask: mask}
 }
 module.exports = ipcalc;
