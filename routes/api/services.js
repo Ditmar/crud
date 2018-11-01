@@ -4,7 +4,6 @@ var sha1 = require('sha1');
 var USER = require("../../database/usersModel");
 var ipcalc = require("../../utils/ipcalc");
 var calcsubnet = require("../../utils/calsubnet");
-
 router.post("/subnet", (req, res) => {
   var data = req.body;
   if (data.ip == null) {
@@ -68,20 +67,20 @@ router.post("/subnet", (req, res) => {
   //bvhost = bits variables de host""
   var octeto = null;
   var bvhost = null;
-  if (host < 8 ) {
+  if (host <= 8 ) {
     bvhost = host - 0 * 8;
     octeto = 3;
   }
-  if (host > 8 && host < 2 * 8) {
+  if (host > 8 && host <= 2 * 8) {
     bvhost = host - 1 * 8;
     octeto = 2;
   }
-  if (host > 16 && host < 3 * 8) {
+  if (host > 16 && host <= 3 * 8) {
     bvhost = host - 2 * 8;
     octeto = 1;
   }
-  if (host > 24 && host < 3*8) {
-    bvhost = host - 2 * 8;
+  if (host > 24 && host <= 4*8) {
+    bvhost = host - 3 * 8;
     octeto = 0;
   }
   var redsalto = Math.pow(2, bvhost);
@@ -107,19 +106,26 @@ router.post("/subnet", (req, res) => {
     ipgenerator =  calcsubnet(current_octeto, ipgenerator, octeto);
     current_octeto = parseInt(ipgenerator[octeto], 10);
     var broadcast = null;
-    broadcast = parseInt(ipgenerator[3], 10) - 1;
-    var ultimaiputilizable = broadcast - 1;
+    var lastvalue = parseInt(ipgenerator[3], 10)
+    if (lastvalue == 0) {
+      broadcast = 255;
+      var ultimaiputilizable = broadcast - 1;
+
+    } else {
+      broadcast = parseInt(ipgenerator[3], 10) - 1;
+      var ultimaiputilizable = broadcast - 1;
+
+    }
+
     var cad = ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + primerautilizable +"--"+ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + ultimaiputilizable
     //rango_host.push(cad);
     //broad_cast.push(ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast);
     network.push([networkdip, cad, ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast]);
 
   }
-  //result["rango_host"] = rango_host;
-  //result["broad_cast"] = broad_cast;
   result["network"] = network;
-
-  res.status(300).json(result);
+  console.log(result)
+  res.status(200).json(result);
 });
 
 
