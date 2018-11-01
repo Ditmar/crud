@@ -3,7 +3,7 @@ var router = express.Router();
 var sha1 = require('sha1');
 var USER = require("../../database/usersModel");
 var ipcalc = require("../../utils/ipcalc");
-
+var calcsubnet = require("../../utils/calsubnet");
 router.post("/subnet", (req, res) => {
   var data = req.body;
   if (data.ip == null) {
@@ -68,52 +68,65 @@ router.post("/subnet", (req, res) => {
   //bvhost = bits variables de host""
   var octeto = null;
   var bvhost = null;
-  if (host < 8 ) {
+  if (host <= 8 ) {
     bvhost = host - 0 * 8;
     octeto = 3;
   }
-  if (host > 8 && host < 2 * 8) {
+  if (host > 8 && host <= 2 * 8) {
     bvhost = host - 1 * 8;
     octeto = 2;
   }
-  if (host > 16 && host < 3 * 8) {
+  if (host > 16 && host <= 3 * 8) {
     bvhost = host - 2 * 8;
     octeto = 1;
   }
-  if (host > 24 && host < 3*8) {
-    bvhost = host - 2 * 8;
-    octeto = 1;
+  if (host > 24 && host <= 4*8) {
+    bvhost = host - 3 * 8;
+    octeto = 0;
   }
   var redsalto = Math.pow(2, bvhost);
   var redanterior = redsalto - 1;
   var result = new ipcalc(data.ip, mask);
   console.log(redsalto);
-  console.log(bvhost);
-  var networklong = Math.pow(2, red);
-  var hostlong = Math.pow(2, host) - 2;
+  console.log(red);
+  var networdlong = Math.pow(2, red);
+  var hostlong    = Math.pow(2, host) - 2;
+  result["networklong"] = networdlong;
+  result["hostlong"]    = hostlong;
+  var ipgenerator = result["ipdec"].split(".");
+  //var rango_host = [];
+  //var broad_cast = [];
+  var network = [];
+  var current_octeto = parseInt(ipgenerator[octeto],10) ;
+  for (var i = 0; i < networdlong - 1 ; i ++) {
+    console.log();
+    current_octeto += redsalto;
+    var primerautilizable = null;
+    primerautilizable = parseInt(ipgenerator[3], 10) + 1;
+    var networkdip = ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + ipgenerator[3];
+    ipgenerator =  calcsubnet(current_octeto, ipgenerator, octeto);
+    current_octeto = parseInt(ipgenerator[octeto], 10);
+    var broadcast = null;
+    var lastvalue = parseInt(ipgenerator[3], 10)
+    if (lastvalue == 0) {
+      broadcast = 255;
+      var ultimaiputilizable = broadcast - 1;
 
-  result["hosturilizables"] = hostlong;
-  result["networkutilizables"] = networklong;
-  var firstnetwork = result["ipdec"];
-  var ipsarray = firstnetwork.split(".");
-  var ipdec = parseInt(ipsarray[octeto], 10);
-  var octetovariable = octeto;
-  for (var i = 0; i < networklong; i++) {
-    console.log(ipsarray[0] + "." + ipsarray[1] + "." + ipsarray[2] + "." + ipsarray[3]);
-    ipdec += redsalto;
-    if (ipdec % 256 == 0) {
-      ipdec = 0;
-      var variable = parseInt(ipsarray[octeto - 1], 10);
-      variable++;
-      ipsarray[octeto - 1] = variable;
-      if (variable % 256 == 0) {
+    } else {
+      broadcast = parseInt(ipgenerator[3], 10) - 1;
+      var ultimaiputilizable = broadcast - 1;
 
-      }
     }
-    ipsarray[octeto] = ipdec;
+
+    var cad = ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + primerautilizable +"--"+ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + ultimaiputilizable
+    //rango_host.push(cad);
+    //broad_cast.push(ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast);
+    network.push([networkdip, cad, ipgenerator[0] + "." + ipgenerator[1] + "." + ipgenerator[2] + "." + broadcast]);
 
   }
-  res.status(300).json(result);
+  result["network"] = network;
+  console.log(result)
+  res.status(200).json(result);
 });
 
 
