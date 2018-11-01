@@ -5,7 +5,7 @@ services:
     build: .
     volumes:
       - ./:/app
-      - ./node_modules:/app/node_modules
+      - ./app/node_modules
     ports:
       - '7777:7777'
     links:
